@@ -24,64 +24,131 @@ char proc_info[10000] = {0};
 void script(int num) {
     switch(num) {
         case 1: {
-            FILE *fp = popen("./script/MemLog.sh &", "r");
-            char buffer[MAX_SIZE] = {0};
-            while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                strcat(mem_info, buffer);
+            int count = 0;
+            while (1) {
+                FILE *fp = popen("./script/MemLog.sh 50", "r");
+                char buffer[MAX_SIZE] = {0};
+                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
+                    strcat(mem_info, buffer);
+                }
+                pclose(fp);
+                count++;
+                if (count >= 10) {
+                    FILE *fin = fopen(Mem, "a+");
+                    //printf("%s\n", mem_info);
+                    fprintf(fin, "%s\n", mem_info);
+                    fclose(fin);
+                    count = 0;
+                }
+                sleep(5);
             }
-            sleep(5);
-            pclose(fp);
             break;
+            exit(0);
         }
         case 2: {
-            FILE *fp = popen("./script/CpuLog.sh &", "r");
-            char buffer[MAX_SIZE] = {0};
-            while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                strcat(cpu_info, buffer);
+            int count = 0;
+            while (1) {
+                FILE *fp = popen("./script/CpuLog.sh", "r");
+                char buffer[MAX_SIZE] = {0};
+                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
+                    strcat(cpu_info, buffer);
+                }
+                pclose(fp);
+                count++;
+                if (count >= 10) {
+                    FILE *fin = fopen(Cpu, "a+");
+                    fprintf(fin, "%s\n", cpu_info);
+                    fclose(fin);
+                    count = 0;
+                }
+                sleep(5);
             }
-            sleep(5);
-            pclose(fp);
             break;
+            exit(0);
         }
         case 3: {
-            FILE *fp = popen("./script/DIskLog.sh &", "r");
-            char buffer[MAX_SIZE] = {0};
-            while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                strcat(disk_info, buffer);
+            int count = 0;
+            while (1) {
+                FILE *fp = popen("./script/DiskLog.sh", "r");
+                char buffer[MAX_SIZE] = {0};
+                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
+                    strcat(disk_info, buffer);
+                }
+                pclose(fp);
+                count++;
+                if (count >= 10) {
+                    FILE *fin = fopen(Disk, "a+");
+                    fprintf(fin, "%s\n", disk_info);
+                    fclose(fin);
+                    count = 0;
+                }
+                sleep(60);
             }
-            sleep(60);
-            pclose(fp);
             break;
+            exit(0);
         }
         case 4: {
-            FILE *fp = popen("./script/System.sh &", "r");
-            char buffer[MAX_SIZE] = {0};
-            while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                strcat(mem_info, buffer);
+            int count = 0;
+            while (1) {
+                FILE *fp = popen("./script/System.sh", "r");
+                char buffer[MAX_SIZE] = {0};
+                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
+                    strcat(system_info, buffer);
+                }
+                pclose(fp);
+                count++;
+                if (count >= 10) {
+                    FILE *fin = fopen(System, "a+");
+                    fprintf(fin, "%s\n", system_info);
+                    fclose(fin);
+                    count = 0;
+                }
+                sleep(60);
             }
-            sleep(60);
-            pclose(fp);
             break;
+            exit(0);
         }
         case 5: {
-            FILE *fp = popen("./script/UserLog.sh &", "r");
-            char buffer[MAX_SIZE] = {0};
-            while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                strcat(mem_info, buffer);
+            int count = 0;
+            while (1) {
+                FILE *fp = popen("./script/UserLog.sh", "r");
+                char buffer[MAX_SIZE] = {0};
+                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
+                    strcat(user_info, buffer);
+                }
+                pclose(fp);
+                count++;
+                if (count >= 10) {
+                    FILE *fin = fopen(User, "a+");
+                    fprintf(fin, "%s\n", user_info);
+                    fclose(fin);
+                    count = 0;
+                }
+                sleep(60);
             }
-            sleep(60);
-            pclose(fp);
             break;
+            exit(0);
         }
         case 6: {
-            FILE *fp = popen("./script/Process.sh &", "r");
-            char buffer[MAX_SIZE] = {0};
-            while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                strcat(mem_info, buffer);
+            int count = 0;
+            while (1) {
+                FILE *fp = popen("./script/Process.sh 50", "r");
+                char buffer[MAX_SIZE] = {0};
+                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
+                    strcat(proc_info, buffer);
+                }
+                pclose(fp);
+                count++;
+                if (count >= 10) {
+                    FILE *fin = fopen(Proc, "a+");
+                    fprintf(fin, "%s\n", proc_info);
+                    fclose(fin);
+                    count = 0;
+                }
+                sleep(30);
             }
-            sleep(30);
-            pclose(fp);
             break;
+            exit(0);
         }
     }
     return ;
@@ -98,25 +165,4 @@ void system_call() {
     }
     script(x);
     return;
-}
-
-void save_file() {
-    FILE *fp = fopen(Mem, "a+");
-    fprintf(fp, "%s\n", mem_info);
-    fclose(fp);
-    fp = fopen(Mem, "a+");
-    fprintf(fp, "%s\n", cpu_info);
-    fclose(fp);
-    fp = fopen(Mem, "a+");
-    fprintf(fp, "%s\n", disk_info);
-    fclose(fp);
-    fp = fopen(Mem, "a+");
-    fprintf(fp, "%s\n", system_info);
-    fclose(fp);
-    fp = fopen(Mem, "a+");
-    fprintf(fp, "%s\n", user_info);
-    fclose(fp);
-    fp = fopen(Mem, "a+");
-    fprintf(fp, "%s\n", proc_info);
-    fclose(fp);
 }
