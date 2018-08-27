@@ -1,5 +1,5 @@
 #!/bin/bash
-date=`date -u +"%Y-%m-%d__%H:%M:%S"`
+date=`date +"%Y-%m-%d__%H:%M:%S"`
 hostname=`hostname`
 uname="`cat /etc/issue | awk '{print $1$2}'`/`uname -r`"
 utime="`uptime | tr "," " " | awk '{print $2"_"$3"_"$4}'` `uptime | tr "," " " | awk '{print $5}'`"

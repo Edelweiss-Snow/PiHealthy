@@ -1,5 +1,5 @@
 #!/bin/bash 
-Nowdate=`date -u +"%Y-%m-%d__%H:%M:%S"`
+Nowdate=`date +"%Y-%m-%d__%H:%M:%S"`
 num=`cat /etc/passwd | awk -F: -v sum=0 '{if($3>=1000&&$3!=65534) sum+=1;} END {print sum}'`
 totaluser=`last |tr -s "\n" | cut -d ' ' -f1 | sort | uniq -c | grep -v wtmp | awk '{printf("%s ",$2);}'`
 Nowsu=`cat /etc/group | grep sudo | awk -F: '{print $4}'`
