@@ -7,162 +7,110 @@
 
 #include "./common.c"
 
-#define Mem "./log/MemLog"
-#define Proc "./log/ProcLog"
-#define System "./log/systemLog"
-#define User "./log/UserLog"
-#define Disk "./log/DiskLog"
-#define Cpu "./log/CpuLog"
+char Mem[50] = "./log/MemLog";
+char Proc[50] = "./log/ProcLog";
+char System[50] = "./log/systemLog";
+char User[50] = "./log/UserLog";
+char Disk[50] = "./log/DiskLog";
+char Cpu[50] = "./log/CpuLog";
+
+char mem_fp[100] = "./script/MemLog.sh 50";
+char disk_fp[100] = "./script/DiskLog.sh";
+char cpu_fp[100] = "./script/CpuLog.sh";
+char user_fp[100] = "./script/UserLog.sh";
+char sys_fp[100] = "./script/System.sh";
+char proc_fp[100] = "./script/Process.sh";
 
 char mem_info[10000] = {0};
 char disk_info[10000] = {0};
 char cpu_info[10000] = {0};
 char user_info[10000] = {0};
-char system_info[10000] = {0};
+char sys_info[10000] = {0};
 char proc_info[10000] = {0};
 
+char warn[10000] = {0};
+char mem_warn[100] = "Mem warning Mem used";
+char disk_warn[100] = "Disk warning Disk used";
+char cpu_warn[100] = "Cpu warning Cpu temperature";
+char proc_warn[100] = "find bad course\n";
+char sign[100] = "signal 3";
+int len = 8;
+int sleep_time[7] = {0, 0, 0, 0, 0, 0, 0};
+
 void script(int num) {
+    char *temp = NULL;
+    char *info = NULL;
+    char *log_dir = NULL;
+    char *file_in = NULL;
     switch(num) {
-        case 1: {
-            int count = 0;
-            while (1) {
-                FILE *fp = popen("./script/MemLog.sh 50", "r");
-                char buffer[MAX_SIZE] = {0};
-                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                    strcat(mem_info, buffer);
-                }
-                pclose(fp);
-                count++;
-                if (count >= 10) {
-                    FILE *fin = fopen(Mem, "a+");
-                    //printf("%s\n", mem_info);
-                    fprintf(fin, "%s\n", mem_info);
-                    fclose(fin);
-                    count = 0;
-                }
-                sleep(5);
+        case 1: {log_dir = mem_fp; file_in = Mem; temp = mem_warn; info = mem_info; break;} 
+        case 2: {log_dir = disk_fp; file_in = Disk; temp = disk_warn; info = disk_info; break;}
+        case 3: {log_dir = cpu_fp; file_in = Cpu; temp = cpu_warn; info = cpu_info; break;}
+        case 4: {log_dir = user_fp; file_in = User; info = user_info; break;}
+        case 5: {log_dir = sys_fp; file_in = System; info = sys_info; break;}
+        case 6: {log_dir = proc_fp; file_in = Proc; temp = proc_warn; info = proc_info; break;}
+    }
+    int count = 0;
+    while (1) {
+        char buffer[MAX_SIZE] = {0};
+        FILE *fp = popen(log_dir, "r");
+        while (fgets(buffer, MAX_SIZE, fp) != NULL) {
+            strcat(info, buffer);
+            if (!strncmp(sign, buffer, len)) {
+                strcat(warn, temp);
+                strcat(warn, buffer + len);
+                int socketfd = socket_connect(9694, master);
+                if (socketfd > 0) send(socketfd, warn, strlen(warn), 0);
+                memset(warn, 0, 10000);
+                close(socketfd);
             }
-            break;
-            exit(0);
         }
-        case 2: {
-            int count = 0;
-            while (1) {
-                FILE *fp = popen("./script/CpuLog.sh", "r");
-                char buffer[MAX_SIZE] = {0};
-                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                    strcat(cpu_info, buffer);
-                }
-                pclose(fp);
-                count++;
-                if (count >= 10) {
-                    FILE *fin = fopen(Cpu, "a+");
-                    fprintf(fin, "%s\n", cpu_info);
-                    fclose(fin);
-                    count = 0;
-                }
-                sleep(5);
-            }
-            break;
-            exit(0);
+        count++;
+        pclose(fp);
+        if (count >= 10) {
+            FILE *fin = fopen(file_in, "a+");
+            fprintf(fin, "%s\n", info);
+            memset(info, 0, 10000);
+            count = 0;
+            fclose(fin);
         }
-        case 3: {
-            int count = 0;
-            while (1) {
-                FILE *fp = popen("./script/DiskLog.sh", "r");
-                char buffer[MAX_SIZE] = {0};
-                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                    strcat(disk_info, buffer);
-                }
-                pclose(fp);
-                count++;
-                if (count >= 10) {
-                    FILE *fin = fopen(Disk, "a+");
-                    fprintf(fin, "%s\n", disk_info);
-                    fclose(fin);
-                    count = 0;
-                }
-                sleep(60);
-            }
-            break;
-            exit(0);
-        }
-        case 4: {
-            int count = 0;
-            while (1) {
-                FILE *fp = popen("./script/System.sh", "r");
-                char buffer[MAX_SIZE] = {0};
-                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                    strcat(system_info, buffer);
-                }
-                pclose(fp);
-                count++;
-                if (count >= 10) {
-                    FILE *fin = fopen(System, "a+");
-                    fprintf(fin, "%s\n", system_info);
-                    fclose(fin);
-                    count = 0;
-                }
-                sleep(60);
-            }
-            break;
-            exit(0);
-        }
-        case 5: {
-            int count = 0;
-            while (1) {
-                FILE *fp = popen("./script/UserLog.sh", "r");
-                char buffer[MAX_SIZE] = {0};
-                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                    strcat(user_info, buffer);
-                }
-                pclose(fp);
-                count++;
-                if (count >= 10) {
-                    FILE *fin = fopen(User, "a+");
-                    fprintf(fin, "%s\n", user_info);
-                    fclose(fin);
-                    count = 0;
-                }
-                sleep(60);
-            }
-            break;
-            exit(0);
-        }
-        case 6: {
-            int count = 0;
-            while (1) {
-                FILE *fp = popen("./script/Process.sh 50", "r");
-                char buffer[MAX_SIZE] = {0};
-                while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-                    strcat(proc_info, buffer);
-                }
-                pclose(fp);
-                count++;
-                if (count >= 10) {
-                    FILE *fin = fopen(Proc, "a+");
-                    fprintf(fin, "%s\n", proc_info);
-                    fclose(fin);
-                    count = 0;
-                }
-                sleep(30);
-            }
-            break;
-            exit(0);
-        }
+        sleep(sleep_time[num]);
     }
     return ;
 }
 
+/*int count = 0;
+while (1) {
+    int cnt = 0;
+    FILE *fp = popen("./script/Process.sh", "r");
+    char buffer[MAX_SIZE] = {0};
+    while (fgets(buffer, MAX_SIZE, fp) != NULL) {
+        cnt++;
+        strcat(proc_info, buffer);
+        if (cnt >= 3) strcat(warn, buffer);
+    }
+    pclose(fp);
+    count++;
+    if (count >= 10) {
+        FILE *fin = fopen(Proc, "a+");
+        fprintf(fin, "%s\n", proc_info);
+        fclose(fin);
+        count = 0;
+    }
+    sleep(30);
+}
+*/
+
 void system_call() {
     int x = 0;
-    int pid = fork();
+    int pid = 1;
     for (int i = 1; i <= 6; i++) {
         if (pid != 0) {
             x = i;
             pid = fork();
         }
     }
+    if (pid != 0) exit(0);
     script(x);
     return;
 }

@@ -14,6 +14,7 @@
 #define DBG(fmt, args...)
 #endif
 #define PI_COUNT 10005
+char master[20] = "192.168.1.197";
 
 char master_logdir[100] = "/var/log/pihealthd.log";
 char client_logdir[100] = "~/log/pihealthd.log";
@@ -50,7 +51,7 @@ int socket_connect(int port, char *host) {
     struct sockaddr_in dest_addr = {0};
     socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket_fd < 0) {
-        perror("socket_create");
+        //perror("socket_create");
         return -1;
     }
 
@@ -59,7 +60,7 @@ int socket_connect(int port, char *host) {
     dest_addr.sin_addr.s_addr = inet_addr(host);
     
     if (connect(socket_fd, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) < 0) {
-        perror("connect");
+        //perror("connect");
         return -1;
     }
     return socket_fd;

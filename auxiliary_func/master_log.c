@@ -8,45 +8,59 @@
 #include "./common.c"
 
 int record_flag = 0;
+char warn_logdir[100] = "/var/log/warning.log";
 
 void master_log(char *ip, FILE *fin) {
     get_time(fin);
     switch(record_flag) {
         case -1: {
-            fprintf(fin, "获取对端连接建立失败，失败对端IP为%s\n", ip);
+            fprintf(fin, "connect refused! IP:%s\n", ip);
             break;
         }
         case -2: {
-            fprintf(fin, "传输文件连接建立失败，失败对端IP为%s\n", ip);
+            fprintf(fin, "file connect refused! IP:%s\n", ip);
             break;
         }
         case 100: {
-            fprintf(fin, "接受文件失败，失败文件为Cpu.log，对端IP为%s\n", ip);
+            fprintf(fin, "recv Cpu.log fail! IP:%s\n", ip);
             break;
         }
         case 101: {
-            fprintf(fin, "接受文件失败，失败文件为Mem.log，对端IP为%s\n", ip);
+            fprintf(fin, "recv Mem.log fail! IP:%s\n", ip);
             break;
         }
         case 102: {
-            fprintf(fin, "接受文件失败，失败文件为Disk.log，对端IP为%s\n", ip);
+            fprintf(fin, "recv Disk.log fail! IP:%s\n", ip);
             break;
         }
         case 103: {
-            fprintf(fin, "接受文件失败，失败文件为Sys.log，对端IP为%s\n", ip);
+            fprintf(fin, "recv Sys.log fail! IP:%s\n", ip);
             break;
         }
         case 104: {
-            fprintf(fin, "接受文件失败，失败文件为Users.log，对端IP为%s\n", ip);
+            fprintf(fin, "recv Users.log fail! IP:%s\n", ip);
             break;
         }
         case 105: {
-            fprintf(fin, "接受文件失败，失败文件为Proc.log，对端IP为%s\n", ip);
+            fprintf(fin, "recv Proc.log fail! IP:%s\n", ip);
             break;
         }
-        default: {
-            fprintf(fin, "接收文件success！，成功的对端IP为%s", ip);
+        case 1: {
+            fprintf(fin, "recv success! IP:%s\n", ip);
             break;
         }
     }   
+}
+
+void recv_warn_file(int socketfd) {
+    FILE *fp = fopen(warn_logdir, "a+");
+    get_time(fp);
+    char buffer[MAX_SIZE] = {0};
+    while (recv(socketfd, buffer, MAX_SIZE, 0) > 0) {
+        printf("%s\n", buffer);
+        fwrite(buffer, sizeof(char), strlen(buffer), fp);
+        memset(buffer, 0, MAX_SIZE);
+    }
+    fclose(fp); 
+    close(socketfd);
 }
