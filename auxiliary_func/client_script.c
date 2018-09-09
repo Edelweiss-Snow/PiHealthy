@@ -35,7 +35,7 @@ char cpu_warn[100] = "Cpu warning Cpu temperature";
 char proc_warn[100] = "find bad course\n";
 char sign[100] = "signal 3";
 int len = 8;
-int sleep_time[7] = {0, 0, 0, 0, 0, 0, 0};
+int sleep_time[7] = {0, 5, 5, 60, 60, 60, 30};
 
 void script(int num) {
     char *temp = NULL;
@@ -78,28 +78,6 @@ void script(int num) {
     }
     return ;
 }
-
-/*int count = 0;
-while (1) {
-    int cnt = 0;
-    FILE *fp = popen("./script/Process.sh", "r");
-    char buffer[MAX_SIZE] = {0};
-    while (fgets(buffer, MAX_SIZE, fp) != NULL) {
-        cnt++;
-        strcat(proc_info, buffer);
-        if (cnt >= 3) strcat(warn, buffer);
-    }
-    pclose(fp);
-    count++;
-    if (count >= 10) {
-        FILE *fin = fopen(Proc, "a+");
-        fprintf(fin, "%s\n", proc_info);
-        fclose(fin);
-        count = 0;
-    }
-    sleep(30);
-}
-*/
 
 void system_call() {
     int x = 0;
