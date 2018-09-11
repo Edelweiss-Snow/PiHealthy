@@ -12,7 +12,7 @@ char warn_logdir[100] = "/var/log/warning.log";
 
 void master_log(char *ip) {
     FILE *fin = fopen(master_logdir, "a+");
-    flock(fileno(fin), LOCK_EX);
+    //flock(fileno(fin), LOCK_EX);
     get_time(fin);
     switch(record_flag) {
         case -1: {
@@ -56,14 +56,14 @@ void master_log(char *ip) {
             break;
         }
     } 
-    flock(fileno(fin), LOCK_UN);
     fclose(fin);
+    
     return ;
 }
 
 void recv_warn_file(int socketfd) {
     FILE *fp = fopen(warn_logdir, "a+");
-    flock(fileno(fp), LOCK_EX);
+    //flock(fileno(fp), LOCK_EX);
     get_time(fp);
     char buffer[MAX_SIZE] = {0};
     while (recv(socketfd, buffer, MAX_SIZE, 0) > 0) {
@@ -71,7 +71,7 @@ void recv_warn_file(int socketfd) {
         fwrite(buffer, sizeof(char), strlen(buffer), fp);
         memset(buffer, 0, MAX_SIZE);
     }
-    flock(fileno(fp), LOCK_UN);
+    //flock(fileno(fp), LOCK_UN);
     fclose(fp); 
     close(socketfd);
 }

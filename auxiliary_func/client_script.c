@@ -69,6 +69,7 @@ void script(int num) {
         pclose(fp);
         if (count >= 10) {
             FILE *fin = fopen(file_in, "a+");
+            flock(fileno(fin), LOCK_EX);
             fprintf(fin, "%s\n", info);
             memset(info, 0, 10000);
             count = 0;
@@ -88,7 +89,7 @@ void system_call() {
             pid = fork();
         }
     }
-    if (pid != 0) exit(0);
+    if (x == 0) exit(0);
     script(x);
     return;
 }

@@ -20,20 +20,29 @@ char master_logdir[100] = "/var/log/pihealthd.log";
 char client_logdir[100] = "~/log/pihealthd.log";
 
 int socket_create(int port) {
+    int yes = 1;
     int socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     struct sockaddr_in sock_addr = {0};
+    struct linger m_sLinger;
+    m_sLinger.l_onoff = 1;
+    m_sLinger.l_linger = 0;
     if (socket_fd < 0) {
         printf("socket_create error");
         perror("socket_create");
+        close(socket_fd);
         return -1;
     }
-    
-    int opt = 1;
-    setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, (const void*)&opt, sizeof(opt));
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons(port);
     sock_addr.sin_addr.s_addr = htons(INADDR_ANY);
+    setsockopt(socket_fd, SOL_SOCKET, SO_LINGER, (const char*)&m_sLinger, sizeof(struct linger));
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+        close(socket_fd);
+        perror("setsockop() error\n");
+        return -1;
+    }
     if (bind(socket_fd, (struct sockaddr *)&sock_addr, sizeof(sock_addr)) < 0) {
+        close(socket_fd);
         perror("bind");
         return -1;
     }
@@ -41,6 +50,7 @@ int socket_create(int port) {
     if (listen(socket_fd, 10) < 0) {
         printf("listen error");
         perror("listen");
+        close(socket_fd);
         return -1;
     }
     return socket_fd;
@@ -52,6 +62,7 @@ int socket_connect(int port, char *host) {
     socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket_fd < 0) {
         //perror("socket_create");
+        close(socket_fd);
         return -1;
     }
 
@@ -61,6 +72,7 @@ int socket_connect(int port, char *host) {
     
     if (connect(socket_fd, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) < 0) {
         //perror("connect");
+        close(socket_fd);
         return -1;
     }
     return socket_fd;
