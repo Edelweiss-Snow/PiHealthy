@@ -61,17 +61,19 @@ void master_log(char *ip) {
     return ;
 }
 
-void recv_warn_file(int socketfd) {
+void recv_warn_file(char *buffer_peer, int socketfd) {
     FILE *fp = fopen(warn_logdir, "a+");
     //flock(fileno(fp), LOCK_EX);
     get_time(fp);
     char buffer[MAX_SIZE] = {0};
+    printf("------%s------\n", buffer_peer);
     while (recv(socketfd, buffer, MAX_SIZE, 0) > 0) {
-        printf("%s\n", buffer);
+        printf("%s", buffer);
         fwrite(buffer, sizeof(char), strlen(buffer), fp);
         memset(buffer, 0, MAX_SIZE);
     }
     //flock(fileno(fp), LOCK_UN);
     fclose(fp); 
     close(socketfd);
+    return ;
 }

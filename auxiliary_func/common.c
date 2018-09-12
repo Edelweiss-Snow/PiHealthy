@@ -19,13 +19,13 @@ char master[20] = "192.168.1.197";
 char master_logdir[100] = "/var/log/pihealthd.log";
 char client_logdir[100] = "~/log/pihealthd.log";
 
-int socket_create(int port) {
+/*int socket_create(int port) {
     int yes = 1;
     int socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     struct sockaddr_in sock_addr = {0};
-    struct linger m_sLinger;
-    m_sLinger.l_onoff = 1;
-    m_sLinger.l_linger = 0;
+    // struct linger m_sLinger;
+    // m_sLinger.l_onoff = 0;
+    // m_sLinger.l_linger = 0;
     if (socket_fd < 0) {
         printf("socket_create error");
         perror("socket_create");
@@ -35,7 +35,7 @@ int socket_create(int port) {
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons(port);
     sock_addr.sin_addr.s_addr = htons(INADDR_ANY);
-    setsockopt(socket_fd, SOL_SOCKET, SO_LINGER, (const char*)&m_sLinger, sizeof(struct linger));
+    // setsockopt(socket_fd, SOL_SOCKET, SO_LINGER, (const char*)&m_sLinger, sizeof(struct linger));
     if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
         close(socket_fd);
         perror("setsockop() error\n");
@@ -54,6 +54,52 @@ int socket_create(int port) {
         return -1;
     }
     return socket_fd;
+}*/
+
+int socket_create(int port){
+	int sockfd;
+	int yes = 1;
+	struct sockaddr_in sock_addr;
+
+	//struct linger m_sLinger;
+	//m_sLinger.l_onoff = 1;
+	//m_sLinger.l_linger = 0;
+	
+
+	//创建套接字
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("socket() error\n");
+		return -1;
+	}
+
+	//设置本地套接字地址
+	sock_addr.sin_family = AF_INET;
+	sock_addr.sin_port = htons(port); //转化为网络字节序
+	sock_addr.sin_addr.s_addr = htonl(INADDR_ANY); //0.0.0.0
+
+	//设置本地套接字
+	//setsockopt(sockfd, SOL_SOCKET, SO_LINGER, (const char*)&m_sLinger,sizeof(struct linger));
+
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+		close(sockfd);
+		perror("setsockopt() error\n");
+		return -1;
+	}
+
+	//绑定本地套接字到套接字
+	if (bind(sockfd, (struct sockaddr *) &sock_addr, sizeof(sock_addr)) < 0) {
+		close(sockfd);
+		perror("bind() error\n");
+		return -1;
+	}
+
+	//将套接字设置为监听状态
+	if (listen(sockfd, 20) < 0) {
+		close(sockfd);
+		perror("listen() error");
+		return -1;
+	}
+	return sockfd;
 }
 
 int socket_connect(int port, char *host) {
@@ -78,7 +124,7 @@ int socket_connect(int port, char *host) {
     return socket_fd;
 }
 
-int socket_c(int server_listen) {
+int socket_c(char *buffer_peer, int server_listen) {
     int socketfd;
     char buffer[MAX_SIZE] = {0};
     struct sockaddr_in client_addr;
@@ -88,7 +134,6 @@ int socket_c(int server_listen) {
         socklen_t peer_len = sizeof(struct sockaddr_in);
         bzero(&peer, sizeof(struct sockaddr_in));
         getpeername(socketfd, (struct sockaddr *)&peer, &peer_len);
-        char buffer_peer[64] = {'\0'};
         inet_ntop(AF_INET, (void*)&peer.sin_addr, buffer_peer, 63);
     }
     return socketfd;
@@ -107,6 +152,7 @@ char **get_ip(int *n) {
         i++;
     }
     *n = i;
+    fclose(fin);
     return ip;
 }
 

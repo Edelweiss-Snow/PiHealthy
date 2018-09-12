@@ -38,7 +38,7 @@ int generate_name(int code, char *logname) {
     return 0;
 }
 
-void recv_file(int num, int data_socket, char *client) {
+void recv_file(char *ip, int num, int data_socket, char *client, int socketfd) {
     char logdir[100] = "/tmp";
     char arg[MAX_SIZE] = {0};
     strcat(logdir, "/");
@@ -48,13 +48,14 @@ void recv_file(int num, int data_socket, char *client) {
     FILE *fp = fopen(logdir, "a+");
     int a;
     char buffer[MAX_SIZE] = {0};
-    while ((a = recv(data_socket, buffer, MAX_SIZE, 0)) > 0) {
-        printf("%s\n", buffer);
-        fwrite(buffer, sizeof(char), strlen(buffer), fp);
+    printf("------%s------%s\n", ip, logdir);
+    while ((a = recv(data_socket, buffer, 1000, 0)) > 0) {
+        printf("%s", buffer);
+        fwrite(buffer, 1, a, fp);
         memset(buffer, 0, MAX_SIZE);
     }
-    close(data_socket);
     fclose(fp);
+    close(data_socket);
 }
 
 int slave(int ip_count, int port, char **ip, int n) {
@@ -80,7 +81,7 @@ int slave(int ip_count, int port, char **ip, int n) {
             }
             int flag = send_signal(socketfd, data_socket, i);
             if (flag == 1) {
-                recv_file(i, data_socket, temp);
+                recv_file(ip[ip_count], i, data_socket, temp, socketfd);
             } else {
                 close(socketfd);
                 close(data_socket);
@@ -121,8 +122,8 @@ int main(int argc, char **argv) {
                 record_flag = slave(ip_count, port, ip, n);
                 master_log(ip[ip_count]);
                 j++;
+                sleep(3);
             }
-            sleep(3);
         }
     }
     if (fid == 0) {
@@ -132,8 +133,9 @@ int main(int argc, char **argv) {
             perror("server_listen");
         } 
         int socketfd;
-        while ((socketfd = socket_c(server_listen)) > 0) {
-            recv_warn_file(socketfd);
+        char *buffer_peer = (char *)calloc(sizeof(char), 64);
+        while ((socketfd = socket_c(buffer_peer, server_listen)) > 0) {
+            recv_warn_file(buffer_peer, socketfd);
         }
     }
     return 0;
